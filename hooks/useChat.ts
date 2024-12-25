@@ -17,6 +17,11 @@ type Message = {
   groupId: string;
 };
 
+type MessageResponse = {
+  error?: string;
+  message: Message;
+};
+
 export function useChat(groupId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,15 +64,13 @@ export function useChat(groupId: string) {
         groupId,
         parentId,
         useGeneratedIdentity
-      }, (response: { error?: string; message?: Message }) => {
+      }, (response: MessageResponse) => {
         if (response.error) {
           reject(new Error(response.error));
-        } else if (response.message) {
-          // Optimistically add the message to the state
+        } else {
+          // Add the message to state immediately
           setMessages(prev => [...prev, response.message]);
           resolve(response);
-        } else {
-          reject(new Error('Invalid response from server'));
         }
       });
     });
